@@ -242,6 +242,24 @@ function saveToLocalStorage() {
     }
 }
 
+function loadMockData() {
+    console.log('加载示例数据');
+    inspirations = [
+        {
+            id: 1,
+            title: '项目创意：AI驱动的智能助手',
+            content: '开发一个基于AI的智能助手，能够帮助用户管理日常任务...',
+            tags: ['AI', '项目', '创意'],
+            isPublic: true,
+            createdAt: new Date(),
+            status: 'pending',
+            tasks: [],
+            nextTaskId: 1
+        }
+    ];
+    renderInspirations(inspirations);
+}
+
 function loadFromLocalStorage() {
     try {
         const savedInspirations = localStorage.getItem('inspirations');

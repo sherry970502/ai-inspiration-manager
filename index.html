@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI灵感管理系统</title>
+    
+    <!-- 引入必要的CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="styles.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">AI灵感管理</a>
+            <div class="d-flex">
+                <button class="btn btn-primary me-2" id="addInspirationBtn">
+                    <i class="fas fa-plus"></i> 新建灵感
+                </button>
+                <button class="btn btn-success me-2" id="aiCreateInspirationBtn">
+                    <i class="fas fa-robot"></i> AI创建灵感
+                </button>
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="userMenu">
+                        <i class="fas fa-user"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- 左侧边栏 -->
+            <div class="col-md-2 sidebar">
+                <div class="filter-section">
+                    <h6>时间筛选</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="#" data-filter="recent">最近7天</a></li>
+                        <li><a href="#" data-filter="history">历史灵感</a></li>
+                    </ul>
+                    
+                    <h6>状态筛选</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="#" data-filter="completed">已完成</a></li>
+                        <li><a href="#" data-filter="pending">进行中</a></li>
+                    </ul>
+
+                    <h6>可见性</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="#" data-filter="public">公开灵感</a></li>
+                        <li><a href="#" data-filter="private">私密灵感</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 主要内容区 -->
+            <div class="col-md-10">
+                <div class="search-bar mb-4">
+                    <input type="text" class="form-control" placeholder="搜索灵感...">
+                </div>
+                
+                <div class="inspiration-grid" id="inspirationGrid">
+                    <!-- 灵感卡片将通过JavaScript动态加载 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新建灵感模态框 -->
+    <div class="modal fade" id="addInspirationModal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">新建灵感</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="inspirationForm">
+                        <div class="mb-3">
+                            <input type="text" class="form-control" placeholder="灵感标题">
+                        </div>
+                        <div class="mb-3">
+                            <textarea class="form-control" rows="4" placeholder="灵感内容"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <input type="text" class="form-control" placeholder="添加标签（用逗号分隔）">
+                        </div>
+                        <div class="form-check mb-3">
+                            <input type="checkbox" class="form-check-input" id="publicCheck">
+                            <label class="form-check-label" for="publicCheck">公开灵感</label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI创建灵感模态框 -->
+    <div class="modal fade" id="aiCreateInspirationModal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">AI创建灵感</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="aiInspirationForm">
+                        <div class="mb-3">
+                            <label class="form-label">输入文本内容</label>
+                            <textarea class="form-control" id="aiInputText" rows="6" 
+                                placeholder="请输入需要分析的文本内容..."></textarea>
+                        </div>
+                        <div id="aiAnalysisResult" class="mb-3 d-none">
+                            <h6 class="border-bottom pb-2">AI分析结果</h6>
+                            <div class="analysis-content">
+                                <!-- AI分析结果将在这里显示 -->
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="analyzeBtn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                        开始分析
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑灵感模态框 -->
+    <div class="modal fade" id="editInspirationModal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">编辑灵感</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editInspirationForm">
+                        <div class="mb-3">
+                            <input type="text" class="form-control" name="title" placeholder="灵感标题">
+                        </div>
+                        <div class="mb-3">
+                            <textarea class="form-control" name="content" rows="4" placeholder="灵感内容"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <input type="text" class="form-control" name="tags" placeholder="添加标签（用逗号分隔）">
+                        </div>
+                        <div class="form-check mb-3">
+                            <input type="checkbox" class="form-check-input" id="editPublicCheck">
+                            <label class="form-check-label" for="editPublicCheck">公开灵感</label>
+                        </div>
+                        <div class="mb-3">
+                            <select class="form-select" name="status">
+                                <option value="pending">进行中</option>
+                                <option value="completed">已完成</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <h6 class="border-bottom pb-2">任务拆解</h6>
+                            <div id="taskList" class="mb-2">
+                                <!-- 任务列表将通过JavaScript动态生成 -->
+                            </div>
+                            <div class="d-flex gap-2">
+                                <input type="text" class="form-control" id="newTaskInput" placeholder="添加新任务">
+                                <button type="button" class="btn btn-outline-primary" id="addTaskBtn">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger me-auto" id="deleteInspirationBtn">删除</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="updateInspirationBtn">更新</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 任务详情模态框 -->
+    <div class="modal fade" id="taskDetailModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">任务详情</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="taskDetailForm">
+                        <input type="hidden" id="taskId">
+                        <div class="mb-3">
+                            <label class="form-label">任务名称</label>
+                            <input type="text" class="form-control" name="taskName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">任务描述</label>
+                            <textarea class="form-control" name="taskDescription" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">截止日期</label>
+                            <input type="date" class="form-control" name="dueDate">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">优先级</label>
+                            <select class="form-select" name="priority">
+                                <option value="low">低</option>
+                                <option value="medium">中</option>
+                                <option value="high">高</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">负责人</label>
+                            <input type="text" class="form-control" name="assignee" placeholder="输入负责人姓名">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="saveTaskBtn">保存任务</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
